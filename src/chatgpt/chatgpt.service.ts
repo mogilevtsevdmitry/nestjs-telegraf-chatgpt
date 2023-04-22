@@ -1,8 +1,7 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Observable, catchError, map, of, tap } from 'rxjs';
-import { Configuration, OpenAIApi } from 'openai';
+import { Observable, catchError, map, of } from 'rxjs';
 
 interface ChatGptAnswer {
     id: string;
@@ -28,15 +27,9 @@ interface ChatGptAnswer {
 export class ChatgptService {
     private readonly logger = new Logger(ChatgptService.name);
     private apiUrl: string;
-    private configuration: Configuration;
-    private openai: OpenAIApi;
 
     constructor(private configService: ConfigService, private httpService: HttpService) {
         this.apiUrl = 'https://api.openai.com/v1/chat/completions';
-        this.configuration = new Configuration({
-            apiKey: this.configService.get('CHATGPT_API_KEY'),
-        });
-        this.openai = new OpenAIApi(this.configuration);
     }
 
     generateResponse(prompt: string): Observable<string> {
@@ -52,7 +45,7 @@ export class ChatgptService {
             temperature: 1,
         };
         return this.httpService.post<ChatGptAnswer>(this.apiUrl, data, { headers }).pipe(
-            tap(({ data }) => this.logger.log(data)),
+            // tap(({ data }) => this.logger.log(data)),
             map((data) => data.data?.choices[0].message.content.trim()),
             catchError((err) => {
                 this.logger.error(err);

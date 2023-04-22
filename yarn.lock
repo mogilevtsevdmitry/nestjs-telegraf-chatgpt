@@ -3699,6 +3699,13 @@ neo-async@^2.6.2:
   resolved "https://registry.yarnpkg.com/neo-async/-/neo-async-2.6.2.tgz#b4aafb93e3aeb2d8174ca53cf163ab7d7308305f"
   integrity sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==
 
+nestjs-telegraf@^2.6.3:
+  version "2.6.3"
+  resolved "https://registry.yarnpkg.com/nestjs-telegraf/-/nestjs-telegraf-2.6.3.tgz#cb8100354a697ca8c87542f8777d9b5a1165049e"
+  integrity sha512-ne3mq4Xnt/HJa5eDeLinpict/zOFp48VUlSfbNuaLd36wCAaPmbBDDXgdKljM7CbZ0c7C36LZgCUXc/BONHQ5Q==
+  dependencies:
+    lodash "^4.17.21"
+
 node-abort-controller@^3.0.1:
   version "3.1.1"
   resolved "https://registry.yarnpkg.com/node-abort-controller/-/node-abort-controller-3.1.1.tgz#a94377e964a9a37ac3976d848cb5c765833b8548"
