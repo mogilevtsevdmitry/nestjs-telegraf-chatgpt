@@ -4,7 +4,7 @@ import { HttpService } from '@nestjs/axios';
 import { UseFilters } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Ctx, Message, On, Start, Update } from 'nestjs-telegraf';
-import { Observable, filter, map, mergeMap } from 'rxjs';
+import { Observable, filter, map, mergeMap, tap } from 'rxjs';
 import { Scenes, Telegraf } from 'telegraf';
 import { VoiceService } from './../voice/voice.service';
 
@@ -50,7 +50,10 @@ export class TelegramService extends Telegraf {
     @On('voice')
     async onVoiceMessage(@Ctx() ctx: Context) {
         const buffer = await this.fileFromTelegram((ctx as TelegramMesage).message.voice.file_id);
-        return buffer.pipe(mergeMap((data) => this.voiceService.voiceToText(data, ctx.message.from.language_code)));
+        return buffer.pipe(
+            mergeMap((data) => this.voiceService.deepgram(data, ctx.message.from.language_code)),
+            mergeMap((text) => this.gpt.generateResponse(text)),
+        );
     }
 
     private async fileFromTelegram(fileId: string): Promise<Observable<Buffer>> {

@@ -1,51 +1,34 @@
-import { SpeechClient } from '@google-cloud/speech';
-import { google } from '@google-cloud/speech/build/protos/protos';
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
-
-enum Lang {
-    ru = 'ru-RU',
-    en = 'en-US',
-}
+import { Deepgram } from '@deepgram/sdk';
+import { PrerecordedTranscriptionResponse } from '@deepgram/sdk/dist/types';
+import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class VoiceService {
     private readonly logger = new Logger(VoiceService.name);
-    private speechClient: SpeechClient;
 
-    constructor() {
-        this.speechClient = new SpeechClient({
-            projectId: 'chatgpt-bot-384612',
-        });
-    }
+    constructor(private readonly config: ConfigService) {}
+    async deepgram(file: Buffer, lang = 'ru') {
+        const deepgram = new Deepgram(this.config.get('DEEPGRAM_KEY'));
 
-    async voiceToText(file: Buffer, lang = 'ru'): Promise<string> {
-        const audioBytes = file.toString('base64');
-
-        const audio = {
-            content: audioBytes,
-        };
-
-        const request: google.cloud.speech.v1.IRecognizeRequest = {
-            audio: audio,
-            config: {
-                encoding: 'OGG_OPUS',
-                languageCode: Lang[lang],
-                sampleRateHertz: 48000,
-            },
-        };
-
-        const [response] = await this.speechClient.recognize(request).catch((err) => {
-            this.logger.error(err);
-            return [null];
-        });
-        if (!response) {
-            throw new BadRequestException();
+        const text = await deepgram.transcription
+            .preRecorded(
+                {
+                    buffer: file,
+                    mimetype: 'audio/ogg',
+                },
+                {
+                    language: lang,
+                    punctuate: true,
+                },
+            )
+            .catch((err) => {
+                this.logger.error(err);
+                return null;
+            });
+        if (!text) {
+            return 'Возникла ошибка';
         }
-        console.log({ response: JSON.stringify(response, null, 2) });
-
-        const transcription = response.results.map((result) => result.alternatives[0].transcript).join('\n');
-        console.log({ transcription });
-
-        return transcription;
+        return (text as PrerecordedTranscriptionResponse).results.channels[0].alternatives[0].transcript;
     }
 }
