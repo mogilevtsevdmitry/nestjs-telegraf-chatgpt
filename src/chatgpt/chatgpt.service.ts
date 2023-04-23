@@ -1,7 +1,7 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Observable, catchError, map, of } from 'rxjs';
+import { Observable, catchError, map, of, tap } from 'rxjs';
 
 interface ChatGptAnswer {
     id: string;
@@ -45,7 +45,7 @@ export class ChatgptService {
             temperature: 1,
         };
         return this.httpService.post<ChatGptAnswer>(this.apiUrl, data, { headers }).pipe(
-            // tap(({ data }) => this.logger.log(data)),
+            tap(({ data }) => this.logger.log(data)),
             map((data) => data.data?.choices[0].message.content.trim()),
             catchError((err) => {
                 this.logger.error(err);
